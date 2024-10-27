@@ -13,6 +13,7 @@ use reqwest::{
     Client,
 };
 use std::{error::Error, io::ErrorKind};
+use std::num::NonZero;
 use symphonia_core::io::MediaSource;
 use tokio::process::Command;
 
@@ -114,12 +115,15 @@ impl YoutubeDl {
                 &new_query
             },
         };
+        let threads = std::thread::available_parallelism().unwrap_or(NonZero::new(1).unwrap()).to_string();
         let ytdl_args = [
             "-j",
             query_str,
             "-f",
             "ba[abr>0][vcodec=none]/best",
             "--no-playlist",
+            "--concurrent-fragments",
+            &threads
         ];
 
         let mut output = Command::new(self.program)
